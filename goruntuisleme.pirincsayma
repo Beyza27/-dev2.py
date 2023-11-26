@@ -1,0 +1,37 @@
+import cv2
+import numpy as np
+
+# Resmi oku
+img = cv2.imread('pirinc_resmi.png')
+
+# Görüntüyü griye dönüştür
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# Eşikleme yaparak sadece pirinçleri al
+_, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
+
+# Morfolojik işlemler uygula
+kernel = np.ones((5, 5), np.uint8)
+morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+
+# Etiketleme yaparak nesneleri say
+_, labels, stats, centroids = cv2.connectedComponentsWithStats(morph, connectivity=8)
+
+# Arka planı kırmızıya boyayarak görüntüyü oluştur
+result_img = np.zeros_like(img)
+result_img[:] = [0, 0, 255]  # Arkaplanı kırmızıya boyayarak oluştur
+
+# Pirinçlerin olduğu pikselleri kopyala
+result_img[morph == 255] = img[morph == 255]
+
+# İstenen nesneleri say
+rice_count = len(stats) - 1  # Arka plan hariç sayı
+
+# Sonucu ekrana yazdır
+print(f"Pirinç Sayısı: {rice_count}")
+
+# Görüntüyü göster
+cv2.imshow('Orjinal resim', img)
+cv2.imshow('Cıktı resmi', result_img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
